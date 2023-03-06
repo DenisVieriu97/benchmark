@@ -320,7 +320,7 @@ class TorchBench:
 
     def _install_benchmark(self):
         "Install and build TorchBench dependencies"
-        command = ["python", "install.py"]
+        command = ["python", "install.py", "--continue_on_fail"]
         subprocess.check_call(command, cwd=self.srcpath, env=self.bench_env, shell=False)
 
     def run_benchmark(self, commit: Commit, targets: List[str]) -> str:
