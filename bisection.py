@@ -149,7 +149,7 @@ class TorchSource:
             print(f"WARNING: Unmatched repo origin url: {repo_origin_url} with standard {TORCH_GITREPO}")
         self.update_repos()
         # Clean up the existing packages
-        self.cleanup()
+        # self.cleanup()
         self.build_env = build_env
         return True
 
@@ -157,9 +157,9 @@ class TorchSource:
     def update_repos(self):
         repos = [(self.srcpath, "master")]
         repos.extend(TORCHBENCH_DEPS.values())
-        for (repo, branch) in repos:
-            gitutils.clean_git_repo(repo)
-            assert gitutils.update_git_repo(repo, branch), f"Failed to update {branch} branch of repository {repo}."
+        # for (repo, branch) in repos:
+        #     gitutils.clean_git_repo(repo)
+        #     assert gitutils.update_git_repo(repo, branch), f"Failed to update {branch} branch of repository {repo}."
 
     # Get all commits between start and end, save them in self.commits
     def init_commits(self, start: str, end: str, abtest: bool) -> bool:
@@ -185,48 +185,52 @@ class TorchSource:
             return self.commits[int((left_index + right_index) / 2)]
 
     def setup_build_env(self, env) -> Dict[str, str]:
-        env["USE_CUDA"] = "1"
+        env["USE_CUDA"] = "0"
         env["BUILD_CAFFE2_OPS"] = "0"
         # Do not build the test
         env["BUILD_TEST"] = "0"
-        env["USE_MKLDNN"] = "1"
-        env["USE_MKL"] = "1"
-        env["USE_CUDNN"] = "1"
-        env["CMAKE_PREFIX_PATH"] = env["CONDA_PREFIX"]
+        env["USE_MKLDNN"] = "0"
+        env["USE_MKL"] = "0"
+        env["USE_MPS"] = "1"
+        env["USE_CUDNN"] = "0"
+        env["MACOSX_DEPLOYMENT_TARGET"] = "10.15"
+        env["USE_DISTRIBUTED"] = "1"
         return env
 
     # Checkout the last commit of dependencies on date
     def checkout_deps(self, cdate: datetime):
-        for pkg in TORCHBENCH_DEPS:
-            pkg_path, branch = TORCHBENCH_DEPS[pkg]
-            gitutils.checkout_git_branch(pkg_path, branch)
-            dep_commit = gitutils.get_git_commit_on_date(pkg_path, cdate)
-            print(f"Checking out {pkg} commit {dep_commit} ...", end="", flush=True)
-            assert dep_commit, "Failed to find the commit on {cdate} of {pkg}"
-            assert gitutils.checkout_git_commit(pkg_path, dep_commit), "Failed to checkout commit {commit} of {pkg}"
-            print("done.")
+        None
+        # for pkg in TORCHBENCH_DEPS:
+            # pkg_path, branch = TORCHBENCH_DEPS[pkg]
+            # gitutils.checkout_git_branch(pkg_path, branch)
+            # dep_commit = gitutils.get_git_commit_on_date(pkg_path, cdate)
+            # print(f"Checking out {pkg} commit {dep_commit} ...", end="", flush=True)
+            # assert dep_commit, "Failed to find the commit on {cdate} of {pkg}"
+            # assert gitutils.checkout_git_commit(pkg_path, dep_commit), "Failed to checkout commit {commit} of {pkg}"
+            # print("done.")
     
     # Install dependencies such as torchtext and torchvision
     def build_install_deps(self, build_env):
-        # Build torchdata (required by torchtext)
-        print(f"Building torchdata ...", end="", flush=True)
-        command = "python setup.py install"
-        subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchdata"][0], env=build_env, shell=True)
-        print("done")
-        # Build torchvision
-        print(f"Building torchvision ...", end="", flush=True)
-        command = "python setup.py install"
-        subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchvision"][0], env=build_env, shell=True)
-        print("done")
-        # Build torchtext
-        print(f"Building torchtext ...", end="", flush=True)
-        command = "python setup.py clean install"
-        subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchtext"][0], env=build_env, shell=True)
-        # Build torchaudio
-        print(f"Building torchaudio ...", end="", flush=True)
-        command = "python setup.py clean install"
-        subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchaudio"][0], env=build_env, shell=True)
-        print("done")
+        None
+        # # Build torchdata (required by torchtext)
+        # print(f"Building torchdata ...", end="", flush=True)
+        # command = "python setup.py install"
+        # subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchdata"][0], env=build_env, shell=True)
+        # print("done")
+        # # Build torchvision
+        # print(f"Building torchvision ...", end="", flush=True)
+        # command = "python setup.py install"
+        # subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchvision"][0], env=build_env, shell=True)
+        # print("done")
+        # # Build torchtext
+        # print(f"Building torchtext ...", end="", flush=True)
+        # command = "python setup.py clean install"
+        # subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchtext"][0], env=build_env, shell=True)
+        # # Build torchaudio
+        # print(f"Building torchaudio ...", end="", flush=True)
+        # command = "python setup.py clean install"
+        # subprocess.check_call(command, cwd=TORCHBENCH_DEPS["torchaudio"][0], env=build_env, shell=True)
+        # print("done")
 
     def _build_lazy_tensor(self, commit: Commit, build_env: Dict[str, str]):
         if self.build_lazy:
@@ -396,7 +400,7 @@ class TorchBench:
         result_dir = self.run_benchmark(commit, targets)
         commit.digest = self.gen_digest(result_dir, targets)
         print(f"Cleaning up packages from commit {commit.sha} ...", end="", flush=True)
-        self.torch_src.cleanup()
+        # self.torch_src.cleanup()
         return commit.digest
         
 class TorchBenchBisection:
