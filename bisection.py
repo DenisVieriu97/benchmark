@@ -335,10 +335,8 @@ class TorchBench:
         else:
             os.mkdir(output_dir)
         bmfilter = targets_to_bmfilter(targets, self.models)
-        # If the first time to run benchmark, install the dependencies first
-        if self.first_time:
-            self._install_benchmark()
-            self.first_time = False
+
+
         print(f"Running TorchBench for commit: {commit.sha}, filter {bmfilter} ...", end="", flush=True)
         command = f"""bash .github/scripts/run.sh "{output_dir}" "{bmfilter}" 2>&1 | tee {output_dir}/benchmark.log"""
         try:
@@ -394,7 +392,15 @@ class TorchBench:
                     if os.stat(data_file).st_size:
                         commit.digest = self.gen_digest(result_dir, targets)
                         return commit.digest
+
+        # If the first time to run benchmark, install the dependencies first
+        if self.first_time:
+            self._install_benchmark()
+            self.first_time = False
+
         # Build pytorch and its dependencies
+        print(f"Cleaning up packages before building commit {commit.sha} ...", end="", flush=True)
+        self.torch_src.cleanup()
         self.torch_src.build(commit)
         # Run benchmark
         result_dir = self.run_benchmark(commit, targets)
