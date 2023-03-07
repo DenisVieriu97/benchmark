@@ -149,7 +149,7 @@ class TorchSource:
             print(f"WARNING: Unmatched repo origin url: {repo_origin_url} with standard {TORCH_GITREPO}")
         self.update_repos()
         # Clean up the existing packages
-        # self.cleanup()
+        self.cleanup()
         self.build_env = build_env
         return True
 
@@ -276,7 +276,7 @@ class TorchSource:
         self.build_install_deps(build_env)
 
     def cleanup(self):
-        packages = ["torch"] + list(TORCHBENCH_DEPS.keys())
+        packages = ["torch"]
         CLEANUP_ROUND = 5
         # Clean up multiple times to make sure the packages are all uninstalled
         for _ in range(CLEANUP_ROUND):
@@ -400,7 +400,7 @@ class TorchBench:
         result_dir = self.run_benchmark(commit, targets)
         commit.digest = self.gen_digest(result_dir, targets)
         print(f"Cleaning up packages from commit {commit.sha} ...", end="", flush=True)
-        # self.torch_src.cleanup()
+        self.torch_src.cleanup()
         return commit.digest
         
 class TorchBenchBisection:
