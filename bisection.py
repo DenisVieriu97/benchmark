@@ -149,7 +149,7 @@ class TorchSource:
             print(f"WARNING: Unmatched repo origin url: {repo_origin_url} with standard {TORCH_GITREPO}")
         self.update_repos()
         # Clean up the existing packages
-        self.cleanup()
+        # self.cleanup()
         self.build_env = build_env
         return True
 
